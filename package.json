@@ -1,0 +1,19 @@
+{
+  "name": "fullstackopen_phonebook_backend",
+  "version": "1.0.0",
+  "description": "backend for phonebook app",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sidinsomniac/fullstackopen_phonebook_backend.git"
+  },
+  "author": "Siddhartha Chatterjee",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sidinsomniac/fullstackopen_phonebook_backend/issues"
+  },
+  "homepage": "https://github.com/sidinsomniac/fullstackopen_phonebook_backend#readme"
+}
