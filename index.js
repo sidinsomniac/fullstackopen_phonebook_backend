@@ -63,11 +63,17 @@ app.delete("/api/persons/:id", (req, res) => {
 
 app.post('/api/persons', (req, res) => {
     const body = req.body;
+    const isNamePresent = people.find(person => person.name.toLowerCase().trim() === body.name.toLowerCase().trim());
     if (!(body.name && body.number)) {
         return res.status(400).json({
             error: "Content missing"
         });
+    } else if (isNamePresent) {
+        return res.status(409).json({
+            error: 'name must be unique'
+        });
     }
+
     const person = {
         name: body.name,
         number: body.number,
