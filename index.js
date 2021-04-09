@@ -43,9 +43,9 @@ let people = [
     }
 ];
 
-app.get('/', (req, res) => {
-    res.send("<h1>Hello world</h1>");
-});
+// app.get('/', (req, res) => {
+//     res.send("<h1>Hello world</h1>");
+// });
 
 app.get("/info", (req, res) => {
     const reqDate = new Date();
@@ -54,9 +54,9 @@ app.get("/info", (req, res) => {
     `);
 });
 
-// app.get('/api/persons', (req, res) => {
-//     res.json(people);
-// });
+app.get('/api/persons', (req, res) => {
+    res.json(people);
+});
 
 app.get("/api/persons/:id", (req, res) => {
     const id = +req.params.id;
