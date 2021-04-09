@@ -54,9 +54,9 @@ app.get("/info", (req, res) => {
     `);
 });
 
-app.get('/api/persons', (req, res) => {
-    res.json(people);
-});
+// app.get('/api/persons', (req, res) => {
+//     res.json(people);
+// });
 
 app.get("/api/persons/:id", (req, res) => {
     const id = +req.params.id;
