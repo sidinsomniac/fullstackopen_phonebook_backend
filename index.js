@@ -3,6 +3,8 @@ const app = express();
 const morgan = require('morgan');
 const cors = require('cors');
 
+const Contact = require('./models/phonebook');
+
 app.use(express.json());
 app.use(express.static('build'));
 
@@ -55,7 +57,11 @@ app.get("/info", (req, res) => {
 });
 
 app.get('/api/persons', (req, res) => {
-    res.json(people);
+    Contact.find({}).then(resp => {
+        console.log(JSON.stringify(resp));
+        let people = resp;
+        res.json(people);
+    });
 });
 
 app.get("/api/persons/:id", (req, res) => {
@@ -76,30 +82,29 @@ app.delete("/api/persons/:id", (req, res) => {
 
 app.post('/api/persons', (req, res) => {
     const body = req.body;
-    const isNamePresent = people.find(person => person.name.toLowerCase().trim() === body.name.toLowerCase().trim());
-    if (!(body.name && body.number)) {
-        return res.status(400).json({
-            error: "Content missing"
-        });
-    } else if (isNamePresent) {
-        return res.status(409).json({
-            error: 'name must be unique'
-        });
-    }
+    // const isNamePresent = people.find(person => person.name.toLowerCase().trim() === body.name.toLowerCase().trim());
+    // if (!(body.name && body.number)) {
+    //     return res.status(400).json({
+    //         error: "Content missing"
+    //     });
+    // } else if (isNamePresent) {
+    //     return res.status(409).json({
+    //         error: 'name must be unique'
+    //     });
+    // }
 
-    const person = {
+    const person = new Contact({
         name: body.name,
-        number: body.number,
-        id: generateNewId()
-    };
+        number: body.number
+    });
 
-    people = people.concat(person);
-    res.json(person);
+    person.save().then(resp => {
+        console.log(`${resp.name} successfully saved to phonebook`);
+        res.json(person);
+    }).catch(error => {
+        console.log("Error in saving person", error);
+    });
 });
-
-const generateNewId = () => {
-    return Math.round(Math.random() * 9999);
-};
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
