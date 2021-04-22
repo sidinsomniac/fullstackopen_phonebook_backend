@@ -17,94 +17,101 @@ morgan.token('body', function (req, res) {
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'));
 app.use(cors());
 
-let people = [
-    {
-        "name": "Omaewa Shindeiru",
-        "number": "234-2353-1415",
-        "id": 1243
-    },
-    {
-        "name": "Dan Abramov",
-        "number": "12-43-234345",
-        "id": 7564
-    },
-    {
-        "name": "Mary Poppendieck",
-        "number": "39-23-6423122",
-        "id": 2347
-    },
-    {
-        "name": "Artsy Hekas",
-        "number": "45-2352-3523",
-        "id": 300
-    },
-    {
-        "name": "Zha Warudo",
-        "number": "123-53452-124115",
-        "id": 9786
-    }
-];
-
-// app.get('/', (req, res) => {
-//     res.send("<h1>Hello world</h1>");
-// });
-
+// Route for API info
 app.get("/info", (req, res) => {
-    const reqDate = new Date();
-    res.send(`<p>Phonebook has info for ${people.length} people</p>
-    <p>${reqDate}</p>
-    `);
-});
-
-app.get('/api/persons', (req, res) => {
-    Contact.find({}).then(resp => {
-        console.log(JSON.stringify(resp));
-        let people = resp;
-        res.json(people);
+    Contact.find({}).then(response => {
+        const reqDate = new Date();
+        res.send(`<p>Phonebook has info for ${response.length} people</p>
+        <p>${reqDate}</p>
+        `);
     });
 });
 
-app.get("/api/persons/:id", (req, res) => {
-    const id = +req.params.id;
-    const person = people.find(person => person.id === id);
-    if (person) {
-        res.json(person);
-    } else {
-        res.status(404).end();
-    }
+// Route to get all contacts
+app.get('/api/persons', (req, res) => {
+    Contact.find({}).then(response => {
+        console.log(JSON.stringify(response));
+        res.json(response);
+    });
 });
 
-app.delete("/api/persons/:id", (req, res) => {
-    const id = +req.params.id;
-    people = people.filter(person => person.id !== id);
-    res.status(204).end();
+// Route to get one contact
+app.get("/api/persons/:id", (req, res, next) => {
+    Contact.findById(req.params.id).then(person => {
+        if (person) {
+            res.json(person);
+        } else {
+            res.status(404).end();
+        }
+    }).catch(error => next(error));
 });
 
+// route to delete a contact
+app.delete("/api/persons/:id", (req, res, next) => {
+    const id = req.params.id;
+    Contact.findByIdAndRemove(id).then(response => {
+        res.status(204).end();
+    }).catch(error => next(error));
+});
+
+// Route to post a contact
 app.post('/api/persons', (req, res) => {
     const body = req.body;
-    // const isNamePresent = people.find(person => person.name.toLowerCase().trim() === body.name.toLowerCase().trim());
-    // if (!(body.name && body.number)) {
-    //     return res.status(400).json({
-    //         error: "Content missing"
-    //     });
-    // } else if (isNamePresent) {
-    //     return res.status(409).json({
-    //         error: 'name must be unique'
-    //     });
-    // }
-
+    if (!(body.name && body.number)) {
+        return res.status(400).json({
+            error: "Content missing"
+        });
+    }
     const person = new Contact({
         name: body.name,
         number: body.number
     });
-
-    person.save().then(resp => {
-        console.log(`${resp.name} successfully saved to phonebook`);
+    person.save().then(response => {
+        console.log(`${response.name} successfully saved to phonebook`);
         res.json(person);
     }).catch(error => {
         console.log("Error in saving person", error);
     });
 });
+
+// Route to update a contact
+app.put('/api/persons/:id', (req, res) => {
+    const id = req.params.id;
+    const body = req.body;
+    if (!(body.name && body.number)) {
+        return res.status(400).json({
+            error: "Content missing"
+        });
+    }
+    const newPerson = {
+        name: body.name,
+        number: body.number
+    };
+    Contact.findByIdAndUpdate(id, newPerson, { new: true })
+        .then(updatedPerson => {
+            res.json(updatedPerson);
+        })
+        .catch(error => next(error));
+});
+
+// Error handlers
+const unknownEndpoint = (request, response) => {
+    response.status(404).send({ error: 'unknown endpoint' });
+};
+
+// handler of requests with unknown endpoint
+app.use(unknownEndpoint);
+
+const errorHandler = (error, request, response, next) => {
+    console.log(error.message);
+    if (error.name === 'CastError') {
+        return response.status(400).send({ error: 'malformatted id' });
+    }
+    next(error);
+};
+
+// handler of requests with cast error
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
