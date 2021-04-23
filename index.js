@@ -1,20 +1,20 @@
-const express = require('express');
+const express = require("express");
 const app = express();
-const morgan = require('morgan');
-const cors = require('cors');
+const morgan = require("morgan");
+const cors = require("cors");
 
-const Contact = require('./models/phonebook');
+const Contact = require("./models/phonebook");
 
 app.use(express.json());
-app.use(express.static('build'));
+app.use(express.static("build"));
 
-morgan.token('body', function (req, res) {
+morgan.token("body", function (req) {
     if (req.method === "POST")
         return JSON.stringify(req.body);
     return "";
 });
 
-app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'));
+app.use(morgan(":method :url :status :res[content-length] - :response-time ms :body"));
 app.use(cors());
 
 // Route for API info
@@ -28,7 +28,7 @@ app.get("/info", (req, res) => {
 });
 
 // Route to get all contacts
-app.get('/api/persons', (req, res) => {
+app.get("/api/persons", (req, res) => {
     Contact.find({}).then(response => {
         console.log(JSON.stringify(response));
         res.json(response);
@@ -49,13 +49,13 @@ app.get("/api/persons/:id", (req, res, next) => {
 // route to delete a contact
 app.delete("/api/persons/:id", (req, res, next) => {
     const id = req.params.id;
-    Contact.findByIdAndRemove(id).then(response => {
+    Contact.findByIdAndRemove(id).then(() => {
         res.status(204).end();
     }).catch(error => next(error));
 });
 
 // Route to post a contact
-app.post('/api/persons', (req, res, next) => {
+app.post("/api/persons", (req, res, next) => {
     const body = req.body;
     if (!(body.name && body.number)) {
         return res.status(400).json({
@@ -73,7 +73,7 @@ app.post('/api/persons', (req, res, next) => {
 });
 
 // Route to update a contact
-app.put('/api/persons/:id', (req, res, next) => {
+app.put("/api/persons/:id", (req, res, next) => {
     const id = req.params.id;
     const body = req.body;
     if (!(body.name && body.number)) {
@@ -94,7 +94,7 @@ app.put('/api/persons/:id', (req, res, next) => {
 
 // Error handlers
 const unknownEndpoint = (request, response) => {
-    response.status(404).send({ error: 'unknown endpoint' });
+    response.status(404).send({ error: "unknown endpoint" });
 };
 
 // handler of requests with unknown endpoint
@@ -102,9 +102,9 @@ app.use(unknownEndpoint);
 
 const errorHandler = (error, request, response, next) => {
     console.log(error.message);
-    if (error.name === 'CastError') {
-        return response.status(400).send({ error: 'malformatted id' });
-    } else if (error.name === 'ValidationError') {
+    if (error.name === "CastError") {
+        return response.status(400).send({ error: "malformatted id" });
+    } else if (error.name === "ValidationError") {
         return response.status(400).json({ error: error.message });
     }
     next(error);
@@ -113,6 +113,7 @@ const errorHandler = (error, request, response, next) => {
 // handler of requests with cast error
 app.use(errorHandler);
 
+// eslint-disable-next-line no-undef
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
