@@ -1,16 +1,26 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
+const uniqueValidator = require('mongoose-unique-validator');
 
 const url = process.env.MONGODB_URI;
-const name = "Siddheshwar";
-const number = "1097-123-124";
 
 mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true });
 
 const contactSchema = new mongoose.Schema({
-    name: String,
-    number: String
+    name: {
+        type: String,
+        required: true,
+        unique: true,
+        minLength: 3
+    },
+    number: {
+        type: String,
+        required: true,
+        minLength: 8
+    }
 });
+
+contactSchema.plugin(uniqueValidator);
 
 contactSchema.set('toJSON', {
     transform: (document, returnedObject) => {

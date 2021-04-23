@@ -55,7 +55,7 @@ app.delete("/api/persons/:id", (req, res, next) => {
 });
 
 // Route to post a contact
-app.post('/api/persons', (req, res) => {
+app.post('/api/persons', (req, res, next) => {
     const body = req.body;
     if (!(body.name && body.number)) {
         return res.status(400).json({
@@ -69,13 +69,11 @@ app.post('/api/persons', (req, res) => {
     person.save().then(response => {
         console.log(`${response.name} successfully saved to phonebook`);
         res.json(person);
-    }).catch(error => {
-        console.log("Error in saving person", error);
-    });
+    }).catch(error => next(error));
 });
 
 // Route to update a contact
-app.put('/api/persons/:id', (req, res) => {
+app.put('/api/persons/:id', (req, res, next) => {
     const id = req.params.id;
     const body = req.body;
     if (!(body.name && body.number)) {
@@ -87,7 +85,7 @@ app.put('/api/persons/:id', (req, res) => {
         name: body.name,
         number: body.number
     };
-    Contact.findByIdAndUpdate(id, newPerson, { new: true })
+    Contact.findByIdAndUpdate(id, newPerson, { new: true, runValidators: true })
         .then(updatedPerson => {
             res.json(updatedPerson);
         })
@@ -106,6 +104,8 @@ const errorHandler = (error, request, response, next) => {
     console.log(error.message);
     if (error.name === 'CastError') {
         return response.status(400).send({ error: 'malformatted id' });
+    } else if (error.name === 'ValidationError') {
+        return response.status(400).json({ error: error.message });
     }
     next(error);
 };
